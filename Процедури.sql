@@ -137,13 +137,36 @@ EXEC GetInfo_MusicalDisc_FromStyle 'Pop rock'
 «старий» альбом і самий «молодий». Старість та молодість
 визначаються за датою випуску;*/
 ------------------------Створення процедури---------------------------
-
-
-
+GO
+CREATE PROCEDURE GetInfo_MusicalDisc_TOP_YOUNG_OLD
+AS
+	SELECT [D].[Name] AS 'Назва диску',
+			[A].[Name] AS 'Виконавець',
+			[S].[Name] AS 'Стиль диску',
+			[D].[DatePublish] AS 'Дата виходу',
+			[P].[Name] AS 'Видавець'
+	FROM [Disc] D, [Artist] A, [Style] S, [Publisher] P
+	WHERE [D].[IdArtist] = [A].[Id] AND
+			[D].[IdStyle] = [S].[Id] AND
+			[D].[IdPublisher] = [P].[Id] AND
+			[D].[DatePublish] = (SELECT MIN([D].[DatePublish])
+								FROM [Disc] D)
+	UNION
+		SELECT [D].[Name] AS 'Назва диску',
+			[A].[Name] AS 'Виконавець',
+			[S].[Name] AS 'Стиль диску',
+			[D].[DatePublish] AS 'Дата виходу',
+			[P].[Name] AS 'Видавець'
+	FROM [Disc] D, [Artist] A, [Style] S, [Publisher] P
+	WHERE [D].[IdArtist] = [A].[Id] AND
+			[D].[IdStyle] = [S].[Id] AND
+			[D].[IdPublisher] = [P].[Id] AND
+			[D].[DatePublish] = (SELECT MAX([D].[DatePublish])
+								FROM [Disc] D)
+GO
 ---------------------Кінець створень процедури-------------------------
-
 -------------------------Тестування процедури--------------------------
-
+EXEC GetInfo_MusicalDisc_TOP_YOUNG_OLD
 --************************************************************************************************************************
 /*Збережена процедура видаляє всі диски в назві яких є за-
 дане слово. Слово передається як параметр. Процедура
