@@ -5,6 +5,7 @@ GO
 /*Збережена процедура показує повну інформацію про му-
 зичні диски  */
 ------------------------Створення процедури---------------------------
+GO
 CREATE PROCEDURE GetInfo_MusicalDisc
 AS
 	SELECT [D].[Name] AS 'Назва диску',
@@ -68,18 +69,57 @@ GO
 -------------------------Тестування процедури--------------------------
 exec GetInfo_TopMusicStyle
 --************************************************************************************************************************
-/*Збережена процедура відображає інформацію про диск
-конкретного стилю з найбільшою кількістю пісень. 
-Назва стилю передається як параметр, якщо передано слово all,
-аналіз йде за всіма стилями*/
+/*Збережена процедура відображає інформацію про диск конкретного стилю 
+з найбільшою кількістю пісень. Назва стилю передається як параметр, 
+якщо передано слово all, аналіз йде за всіма стилями*/
 ------------------------Створення процедури---------------------------
-
-
-
+GO
+CREATE PROCEDURE GetInfo_MusicalDisc_FromStyle
+@Style nvarchar(50)
+AS
+	BEGIN
+		IF(@Style = 'all')
+			BEGIN
+				SELECT [D].[Name] AS 'Назва диску',
+					COUNT([S].[Name]) AS 'Кількість пісень'
+				FROM [Disc] D, [Song] So, [Style] S
+				WHERE [So].[IdDisc] = [D].[Id] AND
+						[S].[Id] = [So].[IdStyle]
+				GROUP BY [D].[Name]
+				HAVING COUNT([S].[Name]) = (SELECT MAX([T].[Кількість пісень])
+											FROM (SELECT [D].[Name] AS 'Назва диску',
+												COUNT([S].[Name]) AS 'Кількість пісень'
+											FROM [Disc] D, [Song] So, [Style] S
+											WHERE [So].[IdDisc] = [D].[Id] AND
+													[S].[Id] = [So].[IdStyle]
+											GROUP BY [D].[Name]) AS [T])
+			END
+		ELSE
+			BEGIN
+			SELECT [D].[Name] AS 'Назва диску',
+					COUNT([S].[Name]) AS 'Кількість пісень'
+				FROM [Disc] D, [Song] So, [Style] S
+				WHERE [So].[IdDisc] = [D].[Id] AND
+						[S].[Id] = [So].[IdStyle] AND
+						[S].[Name] = @Style
+				GROUP BY [D].[Name]
+				HAVING  
+						COUNT([S].[Name]) = (SELECT MAX([T].[Кількість пісень])
+											FROM (SELECT [D].[Name] AS 'Назва диску',
+												COUNT([S].[Name]) AS 'Кількість пісень'
+											FROM [Disc] D, [Song] So, [Style] S
+											WHERE [So].[IdDisc] = [D].[Id] AND
+													[S].[Id] = [So].[IdStyle] AND
+													[S].[Name] = @Style
+											GROUP BY [D].[Name]) AS [T])						
+			END
+	END
+GO
 ---------------------Кінець створень процедури-------------------------
-
 -------------------------Тестування процедури--------------------------
-
+EXEC GetInfo_MusicalDisc_FromStyle 'ALL'
+EXEC GetInfo_MusicalDisc_FromStyle 'Rock & Roll'
+EXEC GetInfo_MusicalDisc_FromStyle 'Pop rock'
 --************************************************************************************************************************
 /*Збережена процедура видаляє всі диски заданого стилю.
 Назва стилю передається як параметр. Процедура повер-
