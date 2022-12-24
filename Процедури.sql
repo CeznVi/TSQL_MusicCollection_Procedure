@@ -137,7 +137,6 @@ AS
 		DELETE 
 			FROM [Disc]
 			WHERE [Disc].[IdStyle] = @DeletingID
-
 	END
 GO
 ---------------------Кінець створень процедури-------------------------
@@ -187,10 +186,22 @@ EXEC GetInfo_MusicalDisc_TOP_YOUNG_OLD
 /*Збережена процедура видаляє всі диски в назві яких є задане слово. Слово передається як параметр. Процедура
 повертає кількість видалених альбомів.*/
 ------------------------Створення процедури---------------------------
-
-
-
+GO
+CREATE PROCEDURE Delete_MusicalDisc_NameLIKE
+@Word nvarchar(50)
+AS
+	BEGIN
+		DELETE 
+			FROM [Disc]
+			WHERE [Disc].[Name] LIKE @Word
+	END
+GO
 ---------------------Кінець створень процедури-------------------------
-
 -------------------------Тестування процедури--------------------------
-
+-- Дивимося всі диски
+exec GetInfo_MusicalDisc;
+--Видаляємо
+EXEC Delete_MusicalDisc_NameLIKE '%Тест%'
+EXEC Delete_MusicalDisc_NameLIKE 'hard rock 2'
+-- Перевіряємо
+exec GetInfo_MusicalDisc;
